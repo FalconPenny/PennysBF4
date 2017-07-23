@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class RPM
     {
@@ -51,10 +51,8 @@ namespace MKO_MH4ck_v1_1
             Marshal.Copy(handle.AddrOfPinnedObject(), Buffer, 0, Buffer.Length);
             handle.Free();
 
-            uint oldProtect;
-            Manager.VirtualProtectEx(pHandle, (IntPtr)address, (uint)Buffer.Length, Manager.PAGE_READWRITE, out oldProtect);
-            IntPtr ptrBytesWritten;
-            return Manager.WriteProcessMemory(pHandle, address, Buffer, (uint)Buffer.Length, out ptrBytesWritten);
+            Manager.VirtualProtectEx(pHandle, (IntPtr)address, (uint)Buffer.Length, Manager.PAGE_READWRITE, out uint oldProtect);
+            return Manager.WriteProcessMemory(pHandle, address, Buffer, (uint)Buffer.Length, out IntPtr ptrBytesWritten);
         }
 
         public static void WriteAngle(float _Yaw, float _Pitch)
@@ -113,9 +111,8 @@ namespace MKO_MH4ck_v1_1
         public static string ReadName(Int64 address, UInt64 _Size)
         {
             byte[] buffer = new byte[_Size];
-            IntPtr BytesRead;
 
-            Manager.ReadProcessMemory(pHandle, address, buffer, _Size, out BytesRead);
+            Manager.ReadProcessMemory(pHandle, address, buffer, _Size, out IntPtr BytesRead);
 
             for (int i = 0; i < buffer.Length; i++)
             {
@@ -141,5 +138,13 @@ namespace MKO_MH4ck_v1_1
         {
             return Address >= 0x10000 && Address < 0x000F000000000000;
         } 
+
+        public static bool StringContains(string what, string[] contains)
+        {
+            foreach (string s in contains)
+                if (what.Contains(s))
+                    return true;
+            return false;
+        }
     }
 }

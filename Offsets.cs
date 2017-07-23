@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     public struct Offsets
     {

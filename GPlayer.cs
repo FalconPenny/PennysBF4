@@ -1,8 +1,7 @@
 ﻿using System;
 using SharpDX;
-using MKO_MH4ck;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class GPlayer
     {
@@ -12,7 +11,6 @@ namespace MKO_MH4ck_v1_1
         public Vector3 Origin;
         public Vector3 Velocity;
         public RDoll Bone;
-        //public Vector3 BoneTarget;
         public int Pose;
 
         public Vector2 FoV;
@@ -33,7 +31,6 @@ namespace MKO_MH4ck_v1_1
         public float ShotsFired;
         public float ShotsHit;
         public float DamageCount;
-        //public float Accuracy;
 
         public string LastEnemyNameAimed = "";
         public DateTime LastTimeEnemyAimed = DateTime.Now;
@@ -41,7 +38,6 @@ namespace MKO_MH4ck_v1_1
         public Matrix ViewProj;
         public Matrix MatrixInverse;
 
-        //public float BreathControl;
         public bool NoBreathEnabled = false;
 
         public float Yaw;
@@ -53,18 +49,6 @@ namespace MKO_MH4ck_v1_1
         public Matrix VehicleTranfsorm;
         public float VehicleHealth;
         public float VehicleMaxHealth;
-
-        /*
-        public float VehicleSpeed;
-        public float VehicleWeaponHeatPercentage;
-        public float VehicleRollAngle;
-
-        public float DistanceToCrosshair;
-        public float Pitch;
-        public float TurretYaw;
-        public float altitudeDifference;
-        public float ZeroingDistanceRadians;
-        */
 
         public bool IsValid()
         {

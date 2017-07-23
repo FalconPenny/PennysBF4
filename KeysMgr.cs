@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class KeysMgr
     {

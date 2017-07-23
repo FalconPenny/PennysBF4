@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class Prog
     {

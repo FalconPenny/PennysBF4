@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class Manager
     {

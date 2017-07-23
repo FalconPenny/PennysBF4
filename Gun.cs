@@ -1,7 +1,7 @@
 ﻿using System;
 using SharpDX;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     class Gun
     {
@@ -36,7 +36,7 @@ namespace MKO_MH4ck_v1_1
         public bool NoGravityEnabled = false;
         public int BulletsPerShell;
         public int BulletsPerShot;        
-        public bool DoubleBulletsEnabled = false;
+        public bool BulletModificationEnabled = false;
 
         public float ZeroingDistanceRadians;
         public float ZeroingDistanceDefault;
@@ -45,6 +45,5 @@ namespace MKO_MH4ck_v1_1
         {
             return Name.Length > 0;
         }
-
     }
 }

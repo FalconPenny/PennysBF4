@@ -1,4 +1,4 @@
-﻿namespace MKO_MH4ck_v1_1
+﻿namespace MultiHack
 {
     partial class Overlay
     {

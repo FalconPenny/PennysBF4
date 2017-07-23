@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     public class VAngle
     {

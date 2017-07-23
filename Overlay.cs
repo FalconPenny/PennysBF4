@@ -14,7 +14,7 @@ using Factory = SharpDX.Direct2D1.Factory;
 using FontFactory = SharpDX.DirectWrite.Factory;
 using Format = SharpDX.DXGI.Format;
 
-namespace MKO_MH4ck_v1_1
+namespace MultiHack
 {
     public partial class Overlay : Form
     {
@@ -26,18 +26,15 @@ namespace MKO_MH4ck_v1_1
         private static List<Gun> localWeapons = null;
         private static List<GPlayer> players = null;
         private static List<GPlayer> targetEnemies = null;
-
         private static Offsets.MKO_ClientSoldierWeaponsComponent.WeaponSlot currWeaponSlot;
 
         private const int proximityDeadline = 50;
         private int spectatorCount = 0;
         private int proximityCount = 0;
-
         // Handle
         private IntPtr handle;
-
         // Screen Size
-        private Rectangle rect;
+        private Rectangle screenRectangle;
 
         #region MAIN : Overlay
 
@@ -70,7 +67,7 @@ namespace MKO_MH4ck_v1_1
         // Set window style
         protected override void OnResize(EventArgs e)
         {
-            int[] margins = new int[] { 0, 0, rect.Width, rect.Height };
+            int[] margins = new int[] { 0, 0, screenRectangle.Width, screenRectangle.Height };
             Manager.DwmExtendFrameIntoClientArea(this.Handle, ref margins);
         }
 
@@ -107,20 +104,20 @@ namespace MKO_MH4ck_v1_1
                     int borderheight;
                     int borderwidth;
 
-                    if (rect.Width != (targetSize.Bottom - targetSize.Top)
-                        && rect.Width != (borderSize.Right - borderSize.Left))
+                    if (screenRectangle.Width != (targetSize.Bottom - targetSize.Top)
+                        && screenRectangle.Width != (borderSize.Right - borderSize.Left))
                         IsResize = true;
 
-                    rect.Width = targetSize.Right - targetSize.Left;
-                    rect.Height = targetSize.Bottom - targetSize.Top;
+                    screenRectangle.Width = targetSize.Right - targetSize.Left;
+                    screenRectangle.Height = targetSize.Bottom - targetSize.Top;
 
                     if ((dwStyle & Manager.WS_BORDER) != 0)
                     {
                         windowheight = targetSize.Bottom - targetSize.Top;
                         windowwidth = targetSize.Right - targetSize.Left;
 
-                        rect.Height = borderSize.Bottom - borderSize.Top;
-                        rect.Width = borderSize.Right - borderSize.Left;
+                        screenRectangle.Height = borderSize.Bottom - borderSize.Top;
+                        screenRectangle.Width = borderSize.Right - borderSize.Left;
 
                         borderheight = (windowheight - borderSize.Bottom);
                         borderwidth = (windowwidth - borderSize.Right) / 2; //only want one side
@@ -129,10 +126,10 @@ namespace MKO_MH4ck_v1_1
                         targetSize.Left += borderwidth;
                         targetSize.Top += borderheight;
 
-                        rect.Left = targetSize.Left;
-                        rect.Top = targetSize.Top;
+                        screenRectangle.Left = targetSize.Left;
+                        screenRectangle.Top = targetSize.Top;
                     }
-                    Manager.MoveWindow(handle, targetSize.Left, targetSize.Top, rect.Width, rect.Height, true);
+                    Manager.MoveWindow(handle, targetSize.Left, targetSize.Top, screenRectangle.Width, screenRectangle.Height, true);
                 }
                 Thread.Sleep(300);
             }
@@ -151,8 +148,8 @@ namespace MKO_MH4ck_v1_1
             this.Visible = true;
             this.FormBorderStyle = FormBorderStyle.None;
             //this.WindowState = FormWindowState.Maximized;
-            this.Width = rect.Width;
-            this.Height = rect.Height;
+            this.Width = screenRectangle.Width;
+            this.Height = screenRectangle.Height;
 
             // Window name
             this.Name = Process.GetCurrentProcess().ProcessName + " - " + AppName;
@@ -166,7 +163,7 @@ namespace MKO_MH4ck_v1_1
             renderProperties = new HwndRenderTargetProperties()
             {
                 Hwnd = this.Handle,
-                PixelSize = new Size2(rect.Width, rect.Height),
+                PixelSize = new Size2(screenRectangle.Width, screenRectangle.Height),
                 PresentOptions = PresentOptions.None
             };
 
@@ -215,7 +212,7 @@ namespace MKO_MH4ck_v1_1
                     // Resize
                     if (IsResize)
                     {
-                        device.Resize(new Size2(rect.Width, rect.Height));
+                        device.Resize(new Size2(screenRectangle.Width, screenRectangle.Height));
                         IsResize = false;
                     }
 
@@ -247,12 +244,12 @@ namespace MKO_MH4ck_v1_1
                         #endregion
 
                         #region Drawing DrawShotAccuracy
-                        DrawShotAccuracy(rect.Width / 2 - 125, rect.Height - 5);
+                        DrawShotAccuracy(screenRectangle.Width / 2 - 125, screenRectangle.Height - 5);
                         #endregion
 
                         #region Drawing Proximity Alert
                         if (bEspSpotline && proximityCount > 0)
-                            DrawProximityAlert(rect.Width / 2 + 300, rect.Height - 80, 155, 50);
+                            DrawProximityAlert(screenRectangle.Width / 2 + 300, screenRectangle.Height - 80, 155, 50);
                         #endregion
 
                         #region Drawing Hardcore Mode HUD
@@ -271,12 +268,12 @@ namespace MKO_MH4ck_v1_1
                         #endregion
 
                         #region Drawing Spectator Count
-                        DrawTextCenter(rect.Width / 2 - 100, rect.Height - (int)font.FontSize, 200, (int)font.FontSize, spectatorCount + " SPECTATOR(S) ON SERVER", new Color(255, 214, 0, 255), true);
+                        DrawTextCenter(screenRectangle.Width / 2 - 100, screenRectangle.Height - (int)font.FontSize, 200, (int)font.FontSize, spectatorCount + " SPECTATOR(S) ON SERVER", new Color(255, 214, 0, 255), true);
                         #endregion
 
                         #region Drawing Spectator Warning
                         if (bSpectatorWarn && spectatorCount > 0)
-                            DrawSpectatorWarn(rect.Center.X - 125, 25, 350, 55);
+                            DrawSpectatorWarn(screenRectangle.Center.X - 125, 25, 350, 55);
                         #endregion
 
                         #region DISABLED: Drawing Credits
@@ -1052,13 +1049,13 @@ namespace MKO_MH4ck_v1_1
         }
         #endregion
 
-        #region Double Bullets Control
+        #region Bullet Modification Control
         private bool DoubleBulletsControl()
         {
-            if ((bDoubleBullets && localPlayer.CurrentWeapon.DoubleBulletsEnabled) || (!bDoubleBullets && !localPlayer.CurrentWeapon.DoubleBulletsEnabled))
+            if ((bBulletModification && localPlayer.CurrentWeapon.BulletModificationEnabled) || (!bBulletModification && !localPlayer.CurrentWeapon.BulletModificationEnabled))
                 return true;
 
-            if (!localPlayer.CurrentWeapon.IsValid() || (int)localPlayer.CurrentWeapon.Slot >= 2 || localPlayer.IsDead() || localPlayer.InVehicle)
+            if (!localPlayer.CurrentWeapon.IsValid() || (int)localPlayer.CurrentWeapon.Slot > 2 || localPlayer.IsDead() || localPlayer.InVehicle)
                 return false;
 
             Int64 pSoldierWeapon = GetSoldierWeapon();
@@ -1077,24 +1074,25 @@ namespace MKO_MH4ck_v1_1
             if (!RPM.IsValid(pShotConfigData))
                 return false;
 
-            if (bDoubleBullets && !localPlayer.CurrentWeapon.DoubleBulletsEnabled)
+            if (bBulletModification && !localPlayer.CurrentWeapon.BulletModificationEnabled)
             {
                 if (localPlayer.CurrentWeapon.BulletsPerShot != 0)
                 {
                     //if (RPM.Read<int>(pShotConfigData + Offsets.ShotConfigData.m_numberOfBulletsPerShell) != localPlayer.CurrentWeapon.BulletsPerShell * 2)
                     //  RPM.Write<int>(pShotConfigData + Offsets.ShotConfigData.m_numberOfBulletsPerShell, localPlayer.CurrentWeapon.BulletsPerShell * 2);
 
-                    if (RPM.Read<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot) != localPlayer.CurrentWeapon.BulletsPerShot * 2)
-                        RPM.Write<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot, localPlayer.CurrentWeapon.BulletsPerShot * 2);
+                    int bullets = (int) Math.Floor(localPlayer.CurrentWeapon.BulletsPerShot * iBulletModification);
+                    if (RPM.Read<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot) != bullets)
+                        RPM.Write<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot, bullets);
 
-                    localPlayer.CurrentWeapon.DoubleBulletsEnabled = true;
+                    localPlayer.CurrentWeapon.BulletModificationEnabled = true;
 
                     return true;
                 }
                 else
                     return false;
             }
-            else if (!bDoubleBullets && localPlayer.CurrentWeapon.DoubleBulletsEnabled)
+            else if (!bBulletModification && localPlayer.CurrentWeapon.BulletModificationEnabled)
             {
                 if (localPlayer.CurrentWeapon.BulletsPerShot != 0)
                 {
@@ -1104,7 +1102,7 @@ namespace MKO_MH4ck_v1_1
                     if (RPM.Read<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot) != localPlayer.CurrentWeapon.BulletsPerShot)
                         RPM.Write<int>(pShotConfigData + Offsets.MKO_ShotConfigData.m_numberOfBulletsPerShot, localPlayer.CurrentWeapon.BulletsPerShot);
 
-                    localPlayer.CurrentWeapon.DoubleBulletsEnabled = false;
+                    localPlayer.CurrentWeapon.BulletModificationEnabled = false;
 
                     return true;
                 }
@@ -1273,28 +1271,16 @@ namespace MKO_MH4ck_v1_1
 
         #endregion
 
-        #region Keys Stuff
+        #region Keybinds
         public void KeyAssign()
         {
             KeysMgr keyMgr = new KeysMgr();
             keyMgr.AddKey(Keys.Home);     // MENU
             keyMgr.AddKey(Keys.Up);       // UP
             keyMgr.AddKey(Keys.Down);     // DOWN
-            keyMgr.AddKey(Keys.Right);    // CHANGE OPTION
             keyMgr.AddKey(Keys.Delete);   // QUIT
 
             keyMgr.AddKey(Keys.F6);       // Clear Weapon Data Bank (Collection)
-
-            keyMgr.AddKey(Keys.F9);       // ATALHO 1
-            keyMgr.AddKey(Keys.F10);      // ATALHO 2
-            keyMgr.AddKey(Keys.F11);      // ATALHO 3
-            keyMgr.AddKey(Keys.F12);      // ATALHO 4
-
-            keyMgr.AddKey(Keys.CapsLock);  // Aimbot Activate 1
-            keyMgr.AddKey(Keys.RButton);   // Aimbot Activate 2
-
-            keyMgr.AddKey(Keys.PageUp);    // Optimized Settings
-            keyMgr.AddKey(Keys.PageDown);  // Default Settings
 
             keyMgr.AddKey(Keys.Left);
             keyMgr.AddKey(Keys.Right);
@@ -1332,131 +1318,13 @@ namespace MKO_MH4ck_v1_1
                 case Keys.F6:
                     localWeapons.Clear();
                     break;
-                case Keys.F9:
-                    bNoBreath = !bNoBreath;
-                    break;
-                case Keys.F10:
-                    if (bRipOfRecoil && bNoSpread)
-                    {
-                        bRipOfRecoil = false;
-                        bNoSpread = false;
-                    }
-                    else
-                    {
-                        bRipOfRecoil = true;
-                        bNoSpread = true;
-                    }
-                    break;
-                case Keys.F11:
-                    switch (currMnAimTarget)
-                    {
-                        case MnAimTarget.HEAD:
-                            currMnAimTarget = MnAimTarget.NECK;
-                            break;
-                        case MnAimTarget.NECK:
-                            currMnAimTarget = MnAimTarget.BODY;
-                            break;
-                        case MnAimTarget.BODY:
-                            currMnAimTarget = MnAimTarget.HEAD;
-                            break;
-                    }
-                    break;
-                case Keys.F12:
-                    switch (currMnAimMode)
-                    {
-                        case MnAimClosestTo.OFF:
-                            currMnAimMode = MnAimClosestTo.PLAYER;
-                            break;
-                        case MnAimClosestTo.PLAYER:
-                            currMnAimMode = MnAimClosestTo.CROSSHAIR;
-                            break;
-                        case MnAimClosestTo.CROSSHAIR:
-                            currMnAimMode = MnAimClosestTo.OFF;
-                            break;
-                    }
-                    bAimbot = !(currMnAimMode == MnAimClosestTo.OFF);
-                    break;
-                case Keys.PageUp:
-                    currMnEspMode = MnEspMode.FULL;
-                    ESP_Box = true;
-                    ESP_Bone = true;
-                    ESP_Name = true;
-                    ESP_Health = true;
-                    ESP_Distance = true;
-                    ESP_Vehicle = true;
-
-                    bEspVisiblesOnly = false;
-                    bEsp3D = false;
-                    bEspAllies = false;
-                    bEspSpotline = true;
-
-                    currMnAimMode = MnAimClosestTo.PLAYER;
-                    currMnAimTarget = MnAimTarget.HEAD;
-                    bAimbot = true;
-                    bAimKeyDefault = true;
-                    bAimTwoSecondsRule = false;
-                    bAimAtVehicles = true;
-
-                    bRipOfRecoil = true;
-                    bNoSpread = true;
-                    //bNoGravity = true;
-                    //bSuperBullet = true;
-                    bDoubleBullets = false;
-                    currMnRoF = MnRateOfFire.DEFAULT;
-                    bRateOfFire = false;
-                    bNoBreath = true;
-
-                    currMnHC = MnHardCoreMode.LEFT;
-                    bHardcoreMode = true;
-                    bSpectatorWarn = true;
-                    bUnlockAttachments = true;
-                    if (!UnlockAttachmentsControl())
-                        bUnlockAttachments = false;
-
-                    break;
-                case Keys.PageDown:
-                    currMnEspMode = MnEspMode.FULL;
-                    ESP_Box = true;
-                    ESP_Bone = true;
-                    ESP_Name = true;
-                    ESP_Health = true;
-                    ESP_Distance = true;
-                    ESP_Vehicle = true;
-
-                    bEspVisiblesOnly = false;
-                    bEsp3D = false;
-                    bEspAllies = false;
-                    bEspSpotline = false;
-
-                    currMnAimMode = MnAimClosestTo.OFF;
-                    currMnAimTarget = MnAimTarget.HEAD;
-                    bAimbot = false;
-                    bAimKeyDefault = true;
-                    bAimTwoSecondsRule = true;
-                    bAimAtVehicles = false;
-
-                    bRipOfRecoil = false;
-                    bNoSpread = false;
-                    //bNoGravity = false;
-                    //bSuperBullet = false;
-                    bDoubleBullets = false;
-                    currMnRoF = MnRateOfFire.DEFAULT;
-                    bRateOfFire = false;
-                    bNoBreath = false;
-
-                    currMnHC = MnHardCoreMode.OFF;
-                    bHardcoreMode = false;
-                    bSpectatorWarn = true;
-                    bUnlockAttachments = false;
-                    if (!UnlockAttachmentsControl())
-                        bUnlockAttachments = true;
-                    break;
             }
         }
         #endregion
 
-        #region Menu Stuff
+        #region Menu
 
+        #region Declarations
         private bool bMenuControl = true;
 
         private bool bEspVisiblesOnly = false;
@@ -1475,7 +1343,8 @@ namespace MKO_MH4ck_v1_1
         private bool bNoSpread = false;
         private bool bNoGravity = false;
         private bool bSuperBullet = false;
-        private bool bDoubleBullets = false;
+        private bool bBulletModification = false;
+        private double iBulletModification = 2;
         private bool bRateOfFire = false;
         private bool bNoBreath = false;
 
@@ -1483,36 +1352,82 @@ namespace MKO_MH4ck_v1_1
         private bool bUnlockAttachments = false;
         private bool bSpectatorWarn = true;
 
-        private bool bCrosshairHUD = false;
-        private bool bRadarHUD = false;
-        private bool bAmmoHealthHUD = false;
-
         private enum MnIndex
         {
-            MN_ESP_ESPMODE = 0,
-            MN_ESP_VISIBLES_ONLY = 1,
-            MN_ESP_ALLIES = 2,
-            MN_ESP_3D = 3,
-            MN_ESP_SPOTLINE = 4,
-            MN_AIMBOT_MODE = 5,
-            MN_AIM_TARGET = 6,
-            MN_AIM_TWO_SEC_RULE = 7,
-            MN_AIM_AT_VEHICLE = 8,
-            MN_AIM_KEY = 9,
-            MN_AIM_BFOV = 10,
-            MN_AIM_IFOV = 11,
-            MN_NO_RECOIL = 12,
-            MN_NO_SPREAD = 13,
-            MN_ROF_MODE = 14,
-            MN_NO_BREATH = 15,
-            MN_DOUBLE_BULLETS = 16,
-            MN_HC_MODE = 17,
-            MN_UNLOCK_ATTACHMENTS = 18,
-            MN_SPECTATOR_WARN = 19,
+            MN_ESP_ESPMODE,
+            MN_ESP_VISIBLES_ONLY,
+            MN_ESP_ALLIES,
+            MN_ESP_3D,
+            MN_ESP_SPOTLINE,
+            MN_AIMBOT_MODE,
+            MN_AIM_TARGET,
+            MN_AIM_TWO_SEC_RULE,
+            MN_AIM_AT_VEHICLE,
+            MN_AIM_KEY,
+            MN_AIM_BFOV,
+            MN_AIM_IFOV,
+            MN_NO_RECOIL,
+            MN_NO_SPREAD,
+            MN_ROF_MODE,
+            MN_NO_BREATH,
+            MN_BULLET_MODIFICATION,
+            MN_IBULLET_MODIFICATION,
+            MN_HC_MODE,
+            MN_UNLOCK_ATTACHMENTS,
+            MN_SPECTATOR_WARN,
             //MN_NO_GRAVITY
             //MN_SUPER_BULLET
             //MN_AIM_SMOOTH
         };
+        private MnIndex currMnIndex = MnIndex.MN_ESP_ESPMODE;
+        private int LastMenuIndex = Enum.GetNames(typeof(MnIndex)).Length - 1;
+
+        private enum MnRateOfFire
+        {
+            DEFAULT,
+            PERFIVE,
+            PERTHREE,
+            PERTWO,
+            DOUBLE
+        };
+        private MnRateOfFire currMnRoF = MnRateOfFire.DEFAULT;
+
+        private enum MnEspMode
+        {
+            NONE,
+            MINIMAL,
+            PARTIAL,
+            FULL
+        };
+        private MnEspMode currMnEspMode = MnEspMode.FULL;
+
+        private enum MnHardCoreMode
+        {
+            OFF,
+            LEFT,
+            RIGHT
+        };
+        private MnHardCoreMode currMnHC = MnHardCoreMode.OFF;
+
+        private enum MnAimClosestTo
+        {
+            OFF = 0,
+            PLAYER = 1,
+            CROSSHAIR = 2
+        };
+        MnAimClosestTo currMnAimMode = MnAimClosestTo.OFF;
+
+        private enum MnAimTarget
+        {
+            HEAD = 0,
+            NECK = 1,
+            BODY = 2
+            //,CYCLIC = 3
+        }
+        MnAimTarget currMnAimTarget = MnAimTarget.NECK;
+        #endregion
+
+        #region Logic
         private void Increase(MnIndex index)
         {
             switch (index)
@@ -1521,6 +1436,12 @@ namespace MKO_MH4ck_v1_1
                     if (++iAimFov > 180)
                     {
                         iAimFov = 1;
+                    }
+                    break;
+                case MnIndex.MN_IBULLET_MODIFICATION:
+                    if ((iBulletModification += 0.5) > 5)
+                    {
+                        iBulletModification = 1.5;
                     }
                     break;
                 default:
@@ -1537,6 +1458,12 @@ namespace MKO_MH4ck_v1_1
                     if (--iAimFov < 0)
                     {
                         iAimFov = 180;
+                    }
+                    break;
+                case MnIndex.MN_IBULLET_MODIFICATION:
+                    if ((iBulletModification -= 0.5) < 2)
+                    {
+                        iBulletModification = 5;
                     }
                     break;
                 default:
@@ -1649,14 +1576,8 @@ namespace MKO_MH4ck_v1_1
                 case MnIndex.MN_NO_SPREAD:
                     bNoSpread = !bNoSpread;
                     break;
-                //case mnIndex.MN_NO_GRAVITY:
-                //    bNoGravity = !bNoGravity;
-                //    break;
-                //case mnIndex.MN_SUPER_BULLET:
-                //    bSuperBullet = !bSuperBullet;
-                //    break;
-                case MnIndex.MN_DOUBLE_BULLETS:
-                    bDoubleBullets = !bDoubleBullets;
+                case MnIndex.MN_BULLET_MODIFICATION:
+                    bBulletModification = !bBulletModification;
                     break;
                 case MnIndex.MN_ROF_MODE:
                     MnRateOfFire cacheMnRoF = currMnRoF;
@@ -1697,9 +1618,6 @@ namespace MKO_MH4ck_v1_1
                             break;
                     }
                     bHardcoreMode = !(currMnHC == MnHardCoreMode.OFF);
-                    bCrosshairHUD = bHardcoreMode;
-                    bRadarHUD = bHardcoreMode;
-                    bAmmoHealthHUD = bHardcoreMode;
                     break;
                 case MnIndex.MN_UNLOCK_ATTACHMENTS:
                     bUnlockAttachments = !bUnlockAttachments;
@@ -1711,52 +1629,6 @@ namespace MKO_MH4ck_v1_1
                     break;
             }
         }
-        private MnIndex currMnIndex = MnIndex.MN_ESP_ESPMODE;
-        private int LastMenuIndex = Enum.GetNames(typeof(MnIndex)).Length - 1;
-
-        private enum MnRateOfFire
-        {
-            DEFAULT,
-            PERFIVE,
-            PERTHREE,
-            PERTWO,
-            DOUBLE
-        };
-        private MnRateOfFire currMnRoF = MnRateOfFire.DEFAULT;
-
-        private enum MnEspMode
-        {
-            NONE,
-            MINIMAL,
-            PARTIAL,
-            FULL
-        };
-        private MnEspMode currMnEspMode = MnEspMode.FULL;
-
-        private enum MnHardCoreMode
-        {
-            OFF,
-            LEFT,
-            RIGHT
-        };
-        private MnHardCoreMode currMnHC = MnHardCoreMode.OFF;
-
-        private enum MnAimClosestTo
-        {
-            OFF = 0,
-            PLAYER = 1,
-            CROSSHAIR = 2
-        };
-        MnAimClosestTo currMnAimMode = MnAimClosestTo.OFF;
-
-        private enum MnAimTarget
-        {
-            HEAD = 0,
-            NECK = 1,
-            BODY = 2
-            //,CYCLIC = 3
-        }
-        MnAimTarget currMnAimTarget = MnAimTarget.NECK;
 
         private void CycleMenuDown()
         {
@@ -1824,14 +1696,11 @@ namespace MKO_MH4ck_v1_1
                 case MnIndex.MN_NO_BREATH:
                     result = "NO BREATH : " + (bNoBreath ? "[ ON ]" : "[ OFF ]");
                     break;
-                //case mnIndex.MN_NO_GRAVITY:
-                //    result = "NO GRAVITY : " + (bNoGravity ? "[ ON ]" : "[ OFF ]");
-                //    break;
-                //case mnIndex.MN_SUPER_BULLET:
-                //    result = "SUPER BULLET : " + (bSuperBullet ? "[ ON ]" : "[ OFF ]");
-                //    break;
-                case MnIndex.MN_DOUBLE_BULLETS:
-                    result = "DOUBLE BULLETS : " + (bDoubleBullets ? "[ ON ]" : "[ OFF ]");
+                case MnIndex.MN_BULLET_MODIFICATION:
+                    result = "BULLETS : " + (bBulletModification ? "[ ON ]" : "[ OFF ]");
+                    break;
+                case MnIndex.MN_IBULLET_MODIFICATION:
+                    result = "BULLETS MOD : [ " + iBulletModification + " ]";
                     break;
                 case MnIndex.MN_HC_MODE:
                     result = "ANTI HARDCORE HUD" + (currMnHC == MnHardCoreMode.OFF ? "[ OFF ]" : currMnHC == MnHardCoreMode.LEFT ? "[ LEFT ]" : "[ RIGHT ]");
@@ -1846,6 +1715,7 @@ namespace MKO_MH4ck_v1_1
 
             return result;
         }
+        #endregion
 
         #endregion
 
@@ -1878,8 +1748,8 @@ namespace MKO_MH4ck_v1_1
             float ScreenX = (localPlayer.ViewProj.M11 * _Enemy.X) + (localPlayer.ViewProj.M21 * HeadHeight) + (localPlayer.ViewProj.M31 * _Enemy.Z + localPlayer.ViewProj.M41);
             float ScreenY = (localPlayer.ViewProj.M12 * _Enemy.X) + (localPlayer.ViewProj.M22 * HeadHeight) + (localPlayer.ViewProj.M32 * _Enemy.Z + localPlayer.ViewProj.M42);
 
-            _Screen.X = (rect.Width / 2) + (rect.Width / 2) * ScreenX / ScreenW;
-            _Screen.Y = (rect.Height / 2) - (rect.Height / 2) * ScreenY / ScreenW;
+            _Screen.X = (screenRectangle.Width / 2) + (screenRectangle.Width / 2) * ScreenX / ScreenW;
+            _Screen.Y = (screenRectangle.Height / 2) - (screenRectangle.Height / 2) * ScreenY / ScreenW;
             _Screen.Z = ScreenW;
             return true;
         }
@@ -1895,8 +1765,8 @@ namespace MKO_MH4ck_v1_1
             float ScreenX = (localPlayer.ViewProj.M11 * _Enemy.X) + (localPlayer.ViewProj.M21 * _Enemy.Y) + (localPlayer.ViewProj.M31 * _Enemy.Z + localPlayer.ViewProj.M41);
             float ScreenY = (localPlayer.ViewProj.M12 * _Enemy.X) + (localPlayer.ViewProj.M22 * _Enemy.Y) + (localPlayer.ViewProj.M32 * _Enemy.Z + localPlayer.ViewProj.M42);
 
-            _Screen.X = (rect.Width / 2) + (rect.Width / 2) * ScreenX / ScreenW;
-            _Screen.Y = (rect.Height / 2) - (rect.Height / 2) * ScreenY / ScreenW;
+            _Screen.X = (screenRectangle.Width / 2) + (screenRectangle.Width / 2) * ScreenX / ScreenW;
+            _Screen.Y = (screenRectangle.Height / 2) - (screenRectangle.Height / 2) * ScreenY / ScreenW;
             _Screen.Z = ScreenW;
             return true;
         }
@@ -1952,7 +1822,7 @@ namespace MKO_MH4ck_v1_1
             else if (accuracy >= 25.0f)
                 color = new Color(255, 214, 0, 255);
 
-            DrawTextCenter(rect.Width / 2 - 125, 5, 250, (int)font.FontSize, "ACCURACY : " + accuracy.ToString() + "%", color, true);
+            DrawTextCenter(screenRectangle.Width / 2 - 125, 5, 250, (int)font.FontSize, "ACCURACY : " + accuracy.ToString() + "%", color, true);
         }
 
         private void DrawShortcutMenu(int X, int Y)
@@ -1985,16 +1855,16 @@ namespace MKO_MH4ck_v1_1
                     break;
             }
 
-            DrawText(base.Width - 220, Y, "HOME: SHOW/HIDE MENU", bMenuControl ? selectedColor : Color.YellowGreen, true, fontSmall);
+            int rightWidth = base.Width - 220;
+            DrawText(rightWidth, Y, "HOME: SHOW/HIDE MENU", bMenuControl ? selectedColor : Color.YellowGreen, true, fontSmall);
 
             if (bMenuControl)
             {
                 int currY = Y;
-                int width = base.Width - 220;
-                DrawText(width, currY += 20, "UP/DOWN: NAVIGATE MENU", Color.White, true, fontSmall);
-                DrawText(width, currY += 20, "LEFT: DECREASE MENU ITEM", Color.White, true, fontSmall);
-                DrawText(width, currY += 20, "RIGHT: INCREASE MENU ITEM", Color.White, true, fontSmall);
-                DrawText(width, currY += 20, "DELETE: QUIT", Color.White, true, fontSmall);
+                DrawText(rightWidth, currY += 20, "UP/DOWN: NAVIGATE MENU", Color.White, true, fontSmall);
+                DrawText(rightWidth, currY += 20, "LEFT: DECREASE MENU ITEM", Color.White, true, fontSmall);
+                DrawText(rightWidth, currY += 20, "RIGHT: INCREASE MENU ITEM", Color.White, true, fontSmall);
+                DrawText(rightWidth, currY += 20, "DELETE: QUIT", Color.White, true, fontSmall);
             }
         }
 
